@@ -62,7 +62,8 @@ Para arrancar el programa, puedes usar el script incluido:
 scripts\launch-timetracker.bat
 ```
 
-O arrancar el entorno de desarrollo directamente con Vite:
+**Para macOS, Linux o Raspberry Pi:**
+Abre una terminal en la carpeta del proyecto y ejecuta:
 
 ```bash
 npm run dev
