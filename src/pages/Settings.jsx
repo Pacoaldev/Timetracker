@@ -13,9 +13,11 @@ export default function Settings() {
   const getExportData = useStore((s) => s.getExportData)
   const importData = useStore((s) => s.importData)
   const clearAllData = useStore((s) => s.clearAllData)
+  const loadSeedData = useStore((s) => s.loadSeedData)
 
   const fileRef = useRef(null)
   const [confirmClear, setConfirmClear] = useState(false)
+  const [confirmSeed, setConfirmSeed] = useState(false)
   const [importError, setImportError] = useState('')
 
   const handleImport = async (e) => {
@@ -79,12 +81,17 @@ export default function Settings() {
 
       <section className="mb-8 rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
         <h2 className="mb-4 text-lg font-semibold">Backup y restauración</h2>
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          Los datos se guardan automáticamente en este navegador. Usa siempre la misma URL:
+          <strong className="text-gray-700 dark:text-gray-200"> http://localhost:5173</strong>
+        </p>
         <div className="flex flex-wrap gap-3">
           <Button onClick={() => exportBackup(getExportData())}>Exportar backup</Button>
           <Button variant="secondary" onClick={() => fileRef.current?.click()}>
             Restaurar backup
           </Button>
           <input ref={fileRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
+          <Button variant="secondary" onClick={() => setConfirmSeed(true)}>Cargar datos de ejemplo</Button>
           <Button variant="danger" onClick={() => setConfirmClear(true)}>Borrar todos los datos</Button>
         </div>
         {importError && <p className="mt-2 text-sm text-red-500">{importError}</p>}
@@ -97,6 +104,14 @@ export default function Settings() {
           <li><kbd className="rounded bg-gray-100 px-2 py-0.5 dark:bg-gray-700">Escape</kbd> — Cerrar modales</li>
         </ul>
       </section>
+
+      <ConfirmDialog
+        open={confirmSeed}
+        onClose={() => setConfirmSeed(false)}
+        onConfirm={loadSeedData}
+        title="Cargar datos de ejemplo"
+        message="Se reemplazarán todos los proyectos, tareas y sesiones actuales por datos de demostración."
+      />
 
       <ConfirmDialog
         open={confirmClear}

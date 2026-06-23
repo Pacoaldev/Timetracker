@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { toUTCISO, calcDurationMinutes } from '../utils/time'
-import { saveToLocalStorage, loadFromLocalStorage, loadSettings, saveSettings } from '../utils/storage'
+import { saveToLocalStorage, loadSettings, saveSettings, STORAGE_VERSION, STORAGE_KEY } from '../utils/storage'
 import {
   SEED_PROJECTS,
   SEED_TASKS,
@@ -27,37 +27,63 @@ function logActivity(activities, tipo, entidadId, mensaje) {
   ].slice(0, 200)
 }
 
-function persist(state) {
-  saveToLocalStorage({
+function buildPersistPayload(state) {
+  return {
+    version: STORAGE_VERSION,
     projects: state.projects,
     tasks: state.tasks,
     sessions: state.sessions,
     activities: state.activities,
-  })
+    settings: state.settings,
+    savedAt: toUTCISO(),
+  }
+}
+
+function persist(state) {
+  saveToLocalStorage(buildPersistPayload(state))
   saveSettings(state.settings)
 }
 
+export function persistCurrentState() {
+  persist(useStore.getState())
+}
+
 function hydrate() {
-  const stored = loadFromLocalStorage()
-  const settings = loadSettings()
-  if (stored) {
-    return {
-      projects: stored.projects || [],
-      tasks: stored.tasks || [],
-      sessions: stored.sessions || [],
-      activities: stored.activities || [],
-      settings: { ...DEFAULT_SETTINGS, ...settings },
-      hydrated: true,
+  const legacySettings = loadSettings()
+  const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
+
+  if (raw !== null) {
+    try {
+      const stored = JSON.parse(raw)
+      const settings = {
+        ...DEFAULT_SETTINGS,
+        ...legacySettings,
+        ...(stored.settings || {}),
+      }
+      return {
+        projects: stored.projects ?? [],
+        tasks: stored.tasks ?? [],
+        sessions: stored.sessions ?? [],
+        activities: stored.activities ?? [],
+        settings,
+        hydrated: true,
+      }
+    } catch (error) {
+      console.error('[TimeTracker] Error al leer datos guardados:', error)
     }
   }
-  return {
-    projects: SEED_PROJECTS,
-    tasks: SEED_TASKS,
-    sessions: SEED_SESSIONS,
-    activities: SEED_ACTIVITIES,
-    settings: { ...DEFAULT_SETTINGS, ...settings },
+
+  const settings = { ...DEFAULT_SETTINGS, ...legacySettings }
+  const empty = {
+    projects: [],
+    tasks: [],
+    sessions: [],
+    activities: [],
+    settings,
     hydrated: true,
   }
+  persist(empty)
+  return empty
 }
 
 const initial = hydrate()
@@ -107,6 +133,21 @@ export const useStore = create((set, get) => ({
         tasks: [],
         sessions: [],
         activities: [],
+        activeTimer: null,
+      }
+      persist(next)
+      return next
+    })
+  },
+
+  loadSeedData: () => {
+    set((s) => {
+      const next = {
+        ...s,
+        projects: [...SEED_PROJECTS],
+        tasks: [...SEED_TASKS],
+        sessions: [...SEED_SESSIONS],
+        activities: [...SEED_ACTIVITIES],
         activeTimer: null,
       }
       persist(next)
@@ -447,6 +488,12 @@ export const useStore = create((set, get) => ({
     }))
   },
 }))
+
+let persistTimer
+useStore.subscribe((state) => {
+  clearTimeout(persistTimer)
+  persistTimer = setTimeout(() => persist(state), 150)
+})
 
 // Init dark mode
 if (initial.settings.darkMode) {

@@ -1,22 +1,39 @@
 export const STORAGE_KEY = 'timetracker-data'
 export const SETTINGS_KEY = 'timetracker-settings'
 export const ACTIVE_TIMER_KEY = 'timetracker-active-timer'
+export const STORAGE_VERSION = 1
 
 export function saveToLocalStorage(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    return true
+  } catch (error) {
+    console.error('[TimeTracker] No se pudieron guardar los datos:', error)
+    return false
+  }
+}
+
+export function hasStoredData() {
+  return localStorage.getItem(STORAGE_KEY) !== null
 }
 
 export function loadFromLocalStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : null
-  } catch {
+    if (raw === null) return null
+    return JSON.parse(raw)
+  } catch (error) {
+    console.error('[TimeTracker] Datos locales corruptos:', error)
     return null
   }
 }
 
 export function saveSettings(settings) {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+  } catch (error) {
+    console.error('[TimeTracker] No se pudieron guardar los ajustes:', error)
+  }
 }
 
 export function loadSettings() {
@@ -29,10 +46,14 @@ export function loadSettings() {
 }
 
 export function saveActiveTimer(timer) {
-  if (timer) {
-    localStorage.setItem(ACTIVE_TIMER_KEY, JSON.stringify(timer))
-  } else {
-    localStorage.removeItem(ACTIVE_TIMER_KEY)
+  try {
+    if (timer) {
+      localStorage.setItem(ACTIVE_TIMER_KEY, JSON.stringify(timer))
+    } else {
+      localStorage.removeItem(ACTIVE_TIMER_KEY)
+    }
+  } catch (error) {
+    console.error('[TimeTracker] No se pudo guardar el cronómetro activo:', error)
   }
 }
 
