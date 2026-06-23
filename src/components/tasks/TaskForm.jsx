@@ -5,7 +5,7 @@ import Select from '../shared/Select'
 import Button from '../shared/Button'
 import { useStore } from '../../store'
 import { formatHoursMinutes, getTaskWorkedMinutes, toUTCISO } from '../../utils/time'
-import { validateMasterPin } from '../../utils/pin'
+import { useAuth } from '../../contexts/AuthContext'
 
 const EMPTY = {
   titulo: '',
@@ -33,17 +33,19 @@ function taskToForm(task, proyectoId) {
 
 export default function TaskForm({ open, onClose, task, proyectoId, onSave }) {
   const sessions = useStore((s) => s.sessions)
-  const addManualSession = useStore((s) => s.addManualSession)
+  const addSession = useStore((s) => s.addSession)
+  const { role } = useAuth()
+  const isAdmin = role === 'admin'
 
   const [form, setForm] = useState(() => taskToForm(task, proyectoId))
-  const [manualTime, setManualTime] = useState({ pin: '', hours: '0', minutes: '0', notas: '' })
+  const [manualTime, setManualTime] = useState({ hours: '0', minutes: '0', notas: '' })
   const [pinError, setPinError] = useState('')
   const [manualSuccess, setManualSuccess] = useState('')
 
   useEffect(() => {
     if (open) {
       setForm(taskToForm(task, proyectoId))
-      setManualTime({ pin: '', hours: '0', minutes: '0', notas: '' })
+      setManualTime({ hours: '0', minutes: '0', notas: '' })
       setPinError('')
       setManualSuccess('')
     }
@@ -71,12 +73,6 @@ export default function TaskForm({ open, onClose, task, proyectoId, onSave }) {
     setPinError('')
     setManualSuccess('')
 
-    const error = await validateMasterPin(manualTime.pin)
-    if (error) {
-      setPinError(error)
-      return
-    }
-
     const hours = Math.max(0, Number(manualTime.hours) || 0)
     const minutes = Math.max(0, Math.min(59, Number(manualTime.minutes) || 0))
     const durationMins = hours * 60 + minutes
@@ -89,27 +85,24 @@ export default function TaskForm({ open, onClose, task, proyectoId, onSave }) {
     const end = new Date()
     const start = new Date(end.getTime() - durationMins * 60000)
 
-    const result = await addManualSession(
-      {
-        tareaId: task.id,
-        inicio: toUTCISO(start),
-        fin: toUTCISO(end),
-        duracionMinutos: durationMins,
-        pausasMinutos: 0,
-        notas: manualTime.notas.trim()
-          ? `Manual: ${manualTime.notas.trim()}`
-          : 'Tiempo añadido manualmente',
-        facturable: true,
-      },
-      manualTime.pin
-    )
+    const session = await addSession({
+      tareaId: task.id,
+      inicio: toUTCISO(start),
+      fin: toUTCISO(end),
+      duracionMinutos: durationMins,
+      pausasMinutos: 0,
+      notas: manualTime.notas.trim()
+        ? `Manual: ${manualTime.notas.trim()}`
+        : 'Tiempo añadido manualmente',
+      facturable: true,
+    })
 
-    if (!result.ok) {
-      setPinError(result.error)
+    if (!session) {
+      setPinError('Error guardando la sesión.')
       return
     }
 
-    setManualTime({ pin: '', hours: '0', minutes: '0', notas: '' })
+    setManualTime({ hours: '0', minutes: '0', notas: '' })
     setManualSuccess(`Se añadieron ${formatHoursMinutes(durationMins)}h a la tarea.`)
   }
 
@@ -151,22 +144,13 @@ export default function TaskForm({ open, onClose, task, proyectoId, onSave }) {
           />
         </label>
 
-        {task && (
+        {task && isAdmin && (
           <div className="sm:col-span-2 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-900/50">
             <h3 className="mb-1 text-sm font-semibold">Añadir tiempo manual</h3>
             <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
               Tiempo registrado: <span className="font-mono font-medium">{formatHoursMinutes(workedMins)}h</span>
-              {' · '}Solo tú (con PIN) puedes añadir tiempo manual aquí
             </p>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Input
-                label="PIN maestro *"
-                type="password"
-                value={manualTime.pin}
-                onChange={(e) => setManual('pin', e.target.value)}
-                autoComplete="off"
-                className="sm:col-span-2"
-              />
               <Input
                 label="Horas"
                 type="number"

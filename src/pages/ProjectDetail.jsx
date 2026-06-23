@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useStore } from '../store'
+import { useAuth } from '../contexts/AuthContext'
 import TaskCard from '../components/tasks/TaskCard'
 import TaskForm from '../components/tasks/TaskForm'
 import KanbanBoard from '../components/tasks/KanbanBoard'
@@ -13,13 +14,15 @@ import { generateCSV, generatePDF } from '../utils/export'
 export default function ProjectDetail() {
   const { id } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
+  const { role } = useAuth()
+  const isAdmin = role === 'admin'
   const projects = useStore((s) => s.projects)
   const tasks = useStore((s) => s.tasks)
   const sessions = useStore((s) => s.sessions)
   const addTask = useStore((s) => s.addTask)
   const updateTask = useStore((s) => s.updateTask)
   const deleteTask = useStore((s) => s.deleteTask)
-  const addManualSession = useStore((s) => s.addManualSession)
+  const addSession = useStore((s) => s.addSession)
 
   const project = projects.find((p) => p.id === id)
   const projectTasks = tasks.filter((t) => t.proyectoId === id)
@@ -72,7 +75,7 @@ export default function ProjectDetail() {
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => generateCSV(project, tasks, sessions)}>Export CSV</Button>
           <Button variant="secondary" onClick={() => generatePDF(project, tasks, sessions)}>Export PDF</Button>
-          <Button variant="secondary" onClick={() => setSessionOpen(true)}>+ Sesión manual</Button>
+          {isAdmin && <Button variant="secondary" onClick={() => setSessionOpen(true)}>+ Sesión manual</Button>}
           <Button onClick={() => { setEditing(null); setFormOpen(true) }}>+ Nueva tarea</Button>
         </div>
       </div>
@@ -170,7 +173,7 @@ export default function ProjectDetail() {
         open={sessionOpen}
         onClose={() => setSessionOpen(false)}
         tasks={projectTasks}
-        onSave={(data, pin) => addManualSession(data, pin)}
+        onSave={(data) => addSession(data)}
       />
 
       <ConfirmDialog

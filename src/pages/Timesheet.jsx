@@ -7,7 +7,7 @@ import Button from '../components/shared/Button'
 import { startOfWeek, addDays, formatWeekLabel } from '../utils/time'
 
 export default function Timesheet() {
-  const updateManualSession = useStore((s) => s.updateManualSession)
+  const updateSession = useStore((s) => s.updateSession)
 
   const [view, setView] = useState('week')
   const [weekStart, setWeekStart] = useState(startOfWeek())
@@ -66,7 +66,7 @@ export default function Timesheet() {
         onClose={() => setEditingSession(null)}
         session={editingSession}
         taskId={editingSession?.tareaId}
-        onSave={(data, pin) => updateManualSession(editingSession.id, data, pin)}
+        onSave={(data) => updateSession(editingSession.id, data)}
       />
     </div>
   )

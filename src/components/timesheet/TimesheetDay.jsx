@@ -1,11 +1,14 @@
 import { useStore } from '../../store'
 import { formatDateTime, minutesToHours, isSameDay } from '../../utils/time'
 import Button from '../shared/Button'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function TimesheetDay({ date, onEditSession }) {
   const sessions = useStore((s) => s.sessions)
   const tasks = useStore((s) => s.tasks)
   const projects = useStore((s) => s.projects)
+  const { role } = useAuth()
+  const isAdmin = role === 'admin'
 
   const daySessions = sessions
     .filter((s) => s.fin && isSameDay(new Date(s.inicio), date))
@@ -47,7 +50,7 @@ export default function TimesheetDay({ date, onEditSession }) {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="font-mono text-sm">{minutesToHours(sess.duracionMinutos)}h</span>
-                  <Button size="sm" variant="ghost" onClick={() => onEditSession(sess)}>Editar</Button>
+                  {isAdmin && <Button size="sm" variant="ghost" onClick={() => onEditSession(sess)}>Editar</Button>}
                 </div>
               </div>
             ))}

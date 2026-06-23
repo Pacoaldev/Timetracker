@@ -6,6 +6,7 @@ import ConfirmDialog from '../components/shared/ConfirmDialog'
 import Button from '../components/shared/Button'
 import Select from '../components/shared/Select'
 import { generateCSV, generatePDF } from '../utils/export'
+import { useAuth } from '../contexts/AuthContext'
 
 export default function Projects() {
   const projects = useStore((s) => s.projects)
@@ -20,6 +21,9 @@ export default function Projects() {
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [filterEstado, setFilterEstado] = useState('all')
   const [filterPrioridad, setFilterPrioridad] = useState('all')
+
+  const { role } = useAuth()
+  const isAdmin = role === 'admin'
 
   const filtered = projects.filter((p) => {
     if (filterEstado !== 'all' && p.estado !== filterEstado) return false

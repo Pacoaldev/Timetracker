@@ -2,8 +2,12 @@ import { Link } from 'react-router-dom'
 import Badge from '../shared/Badge'
 import Button from '../shared/Button'
 import { formatDate, minutesToHours } from '../../utils/time'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function ProjectCard({ project, tasks, sessions, onEdit, onDelete, onExportCSV, onExportPDF }) {
+  const { role } = useAuth()
+  const isAdmin = role === 'admin'
+
   const projectTasks = tasks.filter((t) => t.proyectoId === project.id)
   const taskIds = projectTasks.map((t) => t.id)
   const totalMins = sessions

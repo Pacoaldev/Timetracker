@@ -10,12 +10,17 @@ export default function Layout() {
   const activeTimer = useStore((s) => s.activeTimer)
   const pauseTimer = useStore((s) => s.pauseTimer)
   const resumeTimer = useStore((s) => s.resumeTimer)
+  const fetchData = useStore((s) => s.fetchData)
+  const setupSubscriptions = useStore((s) => s.setupSubscriptions)
 
   useTimer()
 
   useEffect(() => {
-    restoreActiveTimer()
-  }, [restoreActiveTimer])
+    fetchData().then(() => {
+      setupSubscriptions()
+      restoreActiveTimer()
+    })
+  }, [fetchData, setupSubscriptions, restoreActiveTimer])
 
   useEffect(() => {
     const handler = (e) => {
