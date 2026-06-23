@@ -3,6 +3,9 @@ import Modal from '../shared/Modal'
 import Input from '../shared/Input'
 import Select from '../shared/Select'
 import Button from '../shared/Button'
+import { useStore } from '../../store'
+import { formatHoursMinutes, getTaskWorkedMinutes, toUTCISO } from '../../utils/time'
+import { validateMasterPin } from '../../utils/pin'
 
 const EMPTY = {
   titulo: '',
@@ -29,13 +32,27 @@ function taskToForm(task, proyectoId) {
 }
 
 export default function TaskForm({ open, onClose, task, proyectoId, onSave }) {
+  const sessions = useStore((s) => s.sessions)
+  const addManualSession = useStore((s) => s.addManualSession)
+
   const [form, setForm] = useState(() => taskToForm(task, proyectoId))
+  const [manualTime, setManualTime] = useState({ pin: '', hours: '0', minutes: '0', notas: '' })
+  const [pinError, setPinError] = useState('')
+  const [manualSuccess, setManualSuccess] = useState('')
 
   useEffect(() => {
-    if (open) setForm(taskToForm(task, proyectoId))
+    if (open) {
+      setForm(taskToForm(task, proyectoId))
+      setManualTime({ pin: '', hours: '0', minutes: '0', notas: '' })
+      setPinError('')
+      setManualSuccess('')
+    }
   }, [open, task, proyectoId])
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }))
+  const setManual = (key, val) => setManualTime((m) => ({ ...m, [key]: val }))
+
+  const workedMins = task ? getTaskWorkedMinutes(task.id, sessions) : 0
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -47,6 +64,53 @@ export default function TaskForm({ open, onClose, task, proyectoId, onSave }) {
       fechaLimite: form.fechaLimite ? new Date(form.fechaLimite).toISOString() : null,
     })
     onClose()
+  }
+
+  const handleAddManualTime = async (e) => {
+    e.preventDefault()
+    setPinError('')
+    setManualSuccess('')
+
+    const error = await validateMasterPin(manualTime.pin)
+    if (error) {
+      setPinError(error)
+      return
+    }
+
+    const hours = Math.max(0, Number(manualTime.hours) || 0)
+    const minutes = Math.max(0, Math.min(59, Number(manualTime.minutes) || 0))
+    const durationMins = hours * 60 + minutes
+
+    if (durationMins <= 0) {
+      setPinError('Indica al menos 1 minuto de tiempo a añadir.')
+      return
+    }
+
+    const end = new Date()
+    const start = new Date(end.getTime() - durationMins * 60000)
+
+    const result = await addManualSession(
+      {
+        tareaId: task.id,
+        inicio: toUTCISO(start),
+        fin: toUTCISO(end),
+        duracionMinutos: durationMins,
+        pausasMinutos: 0,
+        notas: manualTime.notas.trim()
+          ? `Manual: ${manualTime.notas.trim()}`
+          : 'Tiempo añadido manualmente',
+        facturable: true,
+      },
+      manualTime.pin
+    )
+
+    if (!result.ok) {
+      setPinError(result.error)
+      return
+    }
+
+    setManualTime({ pin: '', hours: '0', minutes: '0', notas: '' })
+    setManualSuccess(`Se añadieron ${formatHoursMinutes(durationMins)}h a la tarea.`)
   }
 
   return (
@@ -86,6 +150,53 @@ export default function TaskForm({ open, onClose, task, proyectoId, onSave }) {
             onChange={(e) => set('descripcion', e.target.value)}
           />
         </label>
+
+        {task && (
+          <div className="sm:col-span-2 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-900/50">
+            <h3 className="mb-1 text-sm font-semibold">Añadir tiempo manual</h3>
+            <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
+              Tiempo registrado: <span className="font-mono font-medium">{formatHoursMinutes(workedMins)}h</span>
+              {' · '}Solo tú (con PIN) puedes añadir tiempo manual aquí
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input
+                label="PIN maestro *"
+                type="password"
+                value={manualTime.pin}
+                onChange={(e) => setManual('pin', e.target.value)}
+                autoComplete="off"
+                className="sm:col-span-2"
+              />
+              <Input
+                label="Horas"
+                type="number"
+                min="0"
+                value={manualTime.hours}
+                onChange={(e) => setManual('hours', e.target.value)}
+              />
+              <Input
+                label="Minutos"
+                type="number"
+                min="0"
+                max="59"
+                value={manualTime.minutes}
+                onChange={(e) => setManual('minutes', e.target.value)}
+              />
+              <Input
+                label="Notas (opcional)"
+                value={manualTime.notas}
+                onChange={(e) => setManual('notas', e.target.value)}
+                className="sm:col-span-2"
+              />
+            </div>
+            {pinError && <p className="mt-2 text-sm text-red-500">{pinError}</p>}
+            {manualSuccess && <p className="mt-2 text-sm text-green-600 dark:text-green-400">{manualSuccess}</p>}
+            <Button type="button" variant="secondary" className="mt-3" onClick={handleAddManualTime}>
+              Añadir tiempo
+            </Button>
+          </div>
+        )}
+
         <div className="flex justify-end gap-2 sm:col-span-2">
           <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
           <Button type="submit">Guardar</Button>

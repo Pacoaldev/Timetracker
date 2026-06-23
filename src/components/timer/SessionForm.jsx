@@ -3,6 +3,7 @@ import Modal from '../shared/Modal'
 import Input from '../shared/Input'
 import Select from '../shared/Select'
 import Button from '../shared/Button'
+import { validateMasterPin } from '../../utils/pin'
 
 export default function SessionForm({ open, onClose, taskId, session, tasks = [], onSave }) {
   const [form, setForm] = useState({
@@ -12,7 +13,9 @@ export default function SessionForm({ open, onClose, taskId, session, tasks = []
     notas: session?.notas || '',
     facturable: session?.facturable ?? true,
     tareaId: session?.tareaId || taskId || tasks[0]?.id || '',
+    pin: '',
   })
+  const [pinError, setPinError] = useState('')
 
   useEffect(() => {
     if (open) {
@@ -23,28 +26,57 @@ export default function SessionForm({ open, onClose, taskId, session, tasks = []
         notas: session?.notas || '',
         facturable: session?.facturable ?? true,
         tareaId: session?.tareaId || taskId || tasks[0]?.id || '',
+        pin: '',
       })
+      setPinError('')
     }
   }, [open, session, taskId, tasks])
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }))
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onSave({
-      tareaId: form.tareaId,
-      inicio: new Date(form.inicio).toISOString(),
-      fin: new Date(form.fin).toISOString(),
-      pausasMinutos: Number(form.pausasMinutos),
-      notas: form.notas,
-      facturable: form.facturable,
-    })
+    setPinError('')
+
+    const error = await validateMasterPin(form.pin)
+    if (error) {
+      setPinError(error)
+      return
+    }
+
+    const result = await onSave(
+      {
+        tareaId: form.tareaId,
+        inicio: new Date(form.inicio).toISOString(),
+        fin: new Date(form.fin).toISOString(),
+        pausasMinutos: Number(form.pausasMinutos),
+        notas: form.notas,
+        facturable: form.facturable,
+      },
+      form.pin
+    )
+
+    if (result?.ok === false) {
+      setPinError(result.error)
+      return
+    }
+
     onClose()
   }
 
   return (
     <Modal open={open} onClose={onClose} title={session ? 'Editar sesión' : 'Sesión manual'}>
       <form onSubmit={handleSubmit} className="space-y-4">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Modificar tiempo registrado requiere el PIN maestro. El cronómetro en vivo no lo necesita.
+        </p>
+        <Input
+          label="PIN maestro *"
+          type="password"
+          value={form.pin}
+          onChange={(e) => set('pin', e.target.value)}
+          autoComplete="off"
+        />
         {tasks.length > 0 && !session && (
           <Select
             label="Tarea"
@@ -91,6 +123,7 @@ export default function SessionForm({ open, onClose, taskId, session, tasks = []
           />
           Facturable
         </label>
+        {pinError && <p className="text-sm text-red-500">{pinError}</p>}
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancelar

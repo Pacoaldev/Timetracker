@@ -19,7 +19,7 @@ export default function ProjectDetail() {
   const addTask = useStore((s) => s.addTask)
   const updateTask = useStore((s) => s.updateTask)
   const deleteTask = useStore((s) => s.deleteTask)
-  const addSession = useStore((s) => s.addSession)
+  const addManualSession = useStore((s) => s.addManualSession)
 
   const project = projects.find((p) => p.id === id)
   const projectTasks = tasks.filter((t) => t.proyectoId === id)
@@ -170,7 +170,7 @@ export default function ProjectDetail() {
         open={sessionOpen}
         onClose={() => setSessionOpen(false)}
         tasks={projectTasks}
-        onSave={(data) => addSession(data)}
+        onSave={(data, pin) => addManualSession(data, pin)}
       />
 
       <ConfirmDialog

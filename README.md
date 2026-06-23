@@ -15,6 +15,13 @@ Gestor de tiempo personal dedicado a tareas y sprints en proyectos. App web loca
 
 ```bash
 npm install
+cp src/utils/pin.config.example.js src/utils/pin.config.js
+```
+
+Edita `src/utils/pin.config.js` con el hash SHA-256 de tu PIN (no subas ese archivo al repo; ya está en `.gitignore`):
+
+```bash
+node -e "const c=require('crypto'); console.log(c.createHash('sha256').update('TU_PIN').digest('hex'))"
 ```
 
 ## Desarrollo

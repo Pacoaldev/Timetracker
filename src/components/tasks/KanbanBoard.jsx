@@ -11,6 +11,7 @@ import { useDroppable, useDraggable } from '@dnd-kit/core'
 import Badge from '../shared/Badge'
 import Button from '../shared/Button'
 import { useStore } from '../../store'
+import { formatHoursMinutes, formatHoursMinutesFromHours, getTaskWorkedMinutes } from '../../utils/time'
 
 const COLUMNS = [
   { id: 'todo', label: 'Todo' },
@@ -19,8 +20,9 @@ const COLUMNS = [
   { id: 'done', label: 'Done' },
 ]
 
-function KanbanCard({ task, onStart }) {
+function KanbanCard({ task, sessions, onStart }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: task.id })
+  const workedMins = getTaskWorkedMinutes(task.id, sessions)
   const style = transform
     ? { transform: `translate(${transform.x}px, ${transform.y}px)` }
     : undefined
@@ -36,7 +38,9 @@ function KanbanCard({ task, onStart }) {
       <p className="text-sm font-medium">{task.titulo}</p>
       <div className="mt-2 flex items-center justify-between">
         <Badge label={task.prioridad} type="priority" />
-        <span className="text-xs text-gray-500">{task.horasReales}/{task.estimacionHoras}h</span>
+        <span className="text-xs font-mono text-gray-500">
+          {formatHoursMinutes(workedMins)}h / {formatHoursMinutesFromHours(task.estimacionHoras)}h
+        </span>
       </div>
       {task.estado !== 'done' && (
         <Button size="sm" className="mt-2 w-full" onClick={(e) => { e.stopPropagation(); onStart(task.id) }}>
@@ -47,7 +51,7 @@ function KanbanCard({ task, onStart }) {
   )
 }
 
-function KanbanColumn({ column, tasks, onStart }) {
+function KanbanColumn({ column, tasks, sessions, onStart }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id })
   const columnTasks = tasks.filter((t) => t.estado === column.id)
 
@@ -62,7 +66,7 @@ function KanbanColumn({ column, tasks, onStart }) {
       </div>
       <div className="flex flex-1 flex-col gap-2">
         {columnTasks.map((task) => (
-          <KanbanCard key={task.id} task={task} onStart={onStart} />
+          <KanbanCard key={task.id} task={task} sessions={sessions} onStart={onStart} />
         ))}
       </div>
     </div>
@@ -72,6 +76,7 @@ function KanbanColumn({ column, tasks, onStart }) {
 export default function KanbanBoard({ tasks }) {
   const updateTask = useStore((s) => s.updateTask)
   const startTimer = useStore((s) => s.startTimer)
+  const sessions = useStore((s) => s.sessions)
   const [activeId, setActiveId] = useState(null)
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
@@ -108,7 +113,7 @@ export default function KanbanBoard({ tasks }) {
     >
       <div className="flex gap-4 overflow-x-auto pb-4">
         {COLUMNS.map((col) => (
-          <KanbanColumn key={col.id} column={col} tasks={tasks} onStart={startTimer} />
+          <KanbanColumn key={col.id} column={col} tasks={tasks} sessions={sessions} onStart={startTimer} />
         ))}
       </div>
       <DragOverlay>

@@ -41,6 +41,25 @@ export function minutesToHours(minutes) {
   return (minutes / 60).toFixed(1)
 }
 
+/** Formato H:MM a partir de minutos (ej. 90 → "1:30") */
+export function formatHoursMinutes(minutes) {
+  const total = Math.max(0, Math.round(minutes))
+  const h = Math.floor(total / 60)
+  const m = total % 60
+  return `${h}:${String(m).padStart(2, '0')}`
+}
+
+/** Formato H:MM a partir de horas decimales (ej. 2.5 → "2:30") */
+export function formatHoursMinutesFromHours(hours) {
+  return formatHoursMinutes((hours || 0) * 60)
+}
+
+export function getTaskWorkedMinutes(taskId, sessions) {
+  return sessions
+    .filter((s) => s.tareaId === taskId)
+    .reduce((sum, s) => sum + (s.duracionMinutos || 0), 0)
+}
+
 export function calcDurationMinutes(inicio, fin, pausasMinutos = 0) {
   const start = parseUTC(inicio)
   const end = fin ? parseUTC(fin) : new Date()

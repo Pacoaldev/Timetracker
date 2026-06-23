@@ -1,18 +1,20 @@
 import Badge from '../shared/Badge'
 import Button from '../shared/Button'
-import { formatDate } from '../../utils/time'
+import { formatDate, formatHoursMinutes, formatHoursMinutesFromHours, getTaskWorkedMinutes } from '../../utils/time'
 import { useStore } from '../../store'
 
 export default function TaskCard({ task, onEdit, onDelete, showProject }) {
   const projects = useStore((s) => s.projects)
+  const sessions = useStore((s) => s.sessions)
   const settings = useStore((s) => s.settings)
   const startTimer = useStore((s) => s.startTimer)
   const activeTimer = useStore((s) => s.activeTimer)
 
   const project = projects.find((p) => p.id === task.proyectoId)
+  const workedMins = getTaskWorkedMinutes(task.id, sessions)
+  const estimatedMins = (task.estimacionHoras || 0) * 60
   const alertPercent = settings.estimationAlertPercent || 80
-  const usagePercent =
-    task.estimacionHoras > 0 ? Math.round((task.horasReales / task.estimacionHoras) * 100) : 0
+  const usagePercent = estimatedMins > 0 ? Math.round((workedMins / estimatedMins) * 100) : 0
   const isOverEstimate = usagePercent >= 100
   const isNearLimit = usagePercent >= alertPercent && !isOverEstimate
   const isActive = activeTimer?.taskId === task.id
@@ -45,8 +47,8 @@ export default function TaskCard({ task, onEdit, onDelete, showProject }) {
       )}
 
       <div className="mt-3 flex flex-wrap gap-2 text-xs">
-        <span className={`font-medium ${isOverEstimate ? 'text-red-600' : isNearLimit ? 'text-yellow-600' : 'text-gray-600 dark:text-gray-400'}`}>
-          {task.horasReales}h / {task.estimacionHoras}h ({usagePercent}%)
+        <span className={`font-medium font-mono ${isOverEstimate ? 'text-red-600' : isNearLimit ? 'text-yellow-600' : 'text-gray-600 dark:text-gray-400'}`}>
+          {formatHoursMinutes(workedMins)}h / {formatHoursMinutesFromHours(task.estimacionHoras)}h ({usagePercent}%)
         </span>
         {isOverEstimate && <span className="text-red-600 font-medium">⚠ Supera estimación</span>}
         {task.fechaLimite && <span className="text-gray-500">Límite: {formatDate(task.fechaLimite)}</span>}

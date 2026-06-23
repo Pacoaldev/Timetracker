@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { toUTCISO, calcDurationMinutes } from '../utils/time'
 import { saveToLocalStorage, loadSettings, saveSettings, STORAGE_VERSION, STORAGE_KEY } from '../utils/storage'
+import { validateMasterPin } from '../utils/pin'
 import {
   SEED_PROJECTS,
   SEED_TASKS,
@@ -283,6 +284,22 @@ export const useStore = create((set, get) => ({
       return next
     })
     return session
+  },
+
+  /** Añadir sesión manual — requiere PIN maestro */
+  addManualSession: async (data, pin) => {
+    const error = await validateMasterPin(pin)
+    if (error) return { ok: false, error }
+    const session = get().addSession(data)
+    return { ok: true, session }
+  },
+
+  /** Editar sesión manualmente — requiere PIN maestro */
+  updateManualSession: async (id, data, pin) => {
+    const error = await validateMasterPin(pin)
+    if (error) return { ok: false, error }
+    get().updateSession(id, data)
+    return { ok: true }
   },
 
   updateSession: (id, data) => {
