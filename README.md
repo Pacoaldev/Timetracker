@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/images/Timetracker_logo.svg" alt="TimeTracker" width="300" />
+</p>
+
 # TimeTracker
 
 Gestor de tiempo personal dedicado a tareas y sprints en proyectos. App web local (React + Vite) con persistencia en `localStorage`, cronómetro, timesheet y exportación CSV/PDF.
