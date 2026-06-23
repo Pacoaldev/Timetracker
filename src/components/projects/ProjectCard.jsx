@@ -47,6 +47,12 @@ export default function ProjectCard({ project, tasks, sessions, onEdit, onDelete
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
+        <Link to={`/projects/${project.id}`}>
+          <Button size="sm">Ver tareas ({projectTasks.length})</Button>
+        </Link>
+        <Link to={`/projects/${project.id}?new=1`}>
+          <Button size="sm" variant="secondary">+ Tarea</Button>
+        </Link>
         <Button size="sm" variant="secondary" onClick={() => onEdit(project)}>Editar</Button>
         <Button size="sm" variant="ghost" onClick={() => onExportCSV(project)}>CSV</Button>
         <Button size="sm" variant="ghost" onClick={() => onExportPDF(project)}>PDF</Button>

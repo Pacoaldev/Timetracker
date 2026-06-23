@@ -82,7 +82,7 @@ export default function Projects() {
 
       <ProjectForm
         open={formOpen}
-        onClose={() => setFormOpen(false)}
+        onClose={() => { setFormOpen(false); setEditing(null) }}
         project={editing}
         onSave={(data) => {
           if (editing) updateProject(editing.id, data)

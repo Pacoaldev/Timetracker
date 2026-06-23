@@ -68,7 +68,7 @@ export default function Tasks() {
 
       <TaskForm
         open={formOpen}
-        onClose={() => setFormOpen(false)}
+        onClose={() => { setFormOpen(false); setEditing(null) }}
         task={editing}
         onSave={(data) => updateTask(editing.id, data)}
       />

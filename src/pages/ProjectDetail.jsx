@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useStore } from '../store'
 import TaskCard from '../components/tasks/TaskCard'
 import TaskForm from '../components/tasks/TaskForm'
@@ -12,6 +12,7 @@ import { generateCSV, generatePDF } from '../utils/export'
 
 export default function ProjectDetail() {
   const { id } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const projects = useStore((s) => s.projects)
   const tasks = useStore((s) => s.tasks)
   const sessions = useStore((s) => s.sessions)
@@ -40,6 +41,14 @@ export default function ProjectDetail() {
     if (filterTag !== 'all' && !(t.tags || []).includes(filterTag)) return false
     return true
   })
+
+  useEffect(() => {
+    if (searchParams.get('new') === '1') {
+      setEditing(null)
+      setFormOpen(true)
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
 
   if (!project) {
     return (
@@ -120,8 +129,16 @@ export default function ProjectDetail() {
       </div>
 
       {view === 'list' ? (
-        filtered.length === 0 ? (
-          <p className="text-gray-500">No hay tareas. Crea una para empezar.</p>
+        projectTasks.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-gray-300 bg-white p-10 text-center dark:border-gray-600 dark:bg-gray-800">
+            <p className="text-gray-600 dark:text-gray-300">Este proyecto aún no tiene tareas.</p>
+            <p className="mt-1 text-sm text-gray-500">Crea la primera para empezar a registrar tiempo.</p>
+            <Button className="mt-4" onClick={() => { setEditing(null); setFormOpen(true) }}>
+              + Nueva tarea
+            </Button>
+          </div>
+        ) : filtered.length === 0 ? (
+          <p className="text-gray-500">Ninguna tarea coincide con los filtros.</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {filtered.map((task) => (
@@ -140,7 +157,7 @@ export default function ProjectDetail() {
 
       <TaskForm
         open={formOpen}
-        onClose={() => setFormOpen(false)}
+        onClose={() => { setFormOpen(false); setEditing(null) }}
         task={editing}
         proyectoId={id}
         onSave={(data) => {

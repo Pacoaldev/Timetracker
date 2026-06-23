@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Modal from '../shared/Modal'
 import Input from '../shared/Input'
 import Select from '../shared/Select'
@@ -15,8 +15,26 @@ const EMPTY = {
   presupuestoEstimado: '',
 }
 
+function projectToForm(project) {
+  if (!project) return { ...EMPTY }
+  return {
+    nombre: project.nombre || '',
+    cliente: project.cliente || '',
+    descripcion: project.descripcion || '',
+    estado: project.estado || 'activo',
+    prioridad: project.prioridad || 'media',
+    fechaInicio: project.fechaInicio ? project.fechaInicio.slice(0, 10) : '',
+    fechaEntrega: project.fechaEntrega ? project.fechaEntrega.slice(0, 10) : '',
+    presupuestoEstimado: project.presupuestoEstimado ?? '',
+  }
+}
+
 export default function ProjectForm({ open, onClose, project, onSave }) {
-  const [form, setForm] = useState(project ? { ...EMPTY, ...project } : { ...EMPTY })
+  const [form, setForm] = useState(() => projectToForm(project))
+
+  useEffect(() => {
+    if (open) setForm(projectToForm(project))
+  }, [open, project])
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }))
 
@@ -56,8 +74,8 @@ export default function ProjectForm({ open, onClose, project, onSave }) {
             { value: 'baja', label: 'Baja' },
           ]}
         />
-        <Input label="Fecha inicio" type="date" value={form.fechaInicio?.slice(0, 10) || ''} onChange={(e) => set('fechaInicio', e.target.value)} />
-        <Input label="Fecha entrega" type="date" value={form.fechaEntrega?.slice(0, 10) || ''} onChange={(e) => set('fechaEntrega', e.target.value)} />
+        <Input label="Fecha inicio" type="date" value={form.fechaInicio} onChange={(e) => set('fechaInicio', e.target.value)} />
+        <Input label="Fecha entrega" type="date" value={form.fechaEntrega} onChange={(e) => set('fechaEntrega', e.target.value)} />
         <Input label="Presupuesto estimado" type="number" min="0" value={form.presupuestoEstimado} onChange={(e) => set('presupuestoEstimado', e.target.value)} />
         <label className="block sm:col-span-2">
           <span className="mb-1 block text-sm font-medium">Descripción</span>

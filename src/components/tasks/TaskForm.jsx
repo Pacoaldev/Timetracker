@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Modal from '../shared/Modal'
 import Input from '../shared/Input'
 import Select from '../shared/Select'
@@ -14,12 +14,26 @@ const EMPTY = {
   fechaLimite: '',
 }
 
+function taskToForm(task, proyectoId) {
+  if (!task) return { ...EMPTY, proyectoId }
+  return {
+    titulo: task.titulo || '',
+    descripcion: task.descripcion || '',
+    estado: task.estado || 'todo',
+    prioridad: task.prioridad || 'media',
+    estimacionHoras: task.estimacionHoras ?? '',
+    tags: (task.tags || []).join(', '),
+    fechaLimite: task.fechaLimite ? task.fechaLimite.slice(0, 10) : '',
+    proyectoId: task.proyectoId || proyectoId,
+  }
+}
+
 export default function TaskForm({ open, onClose, task, proyectoId, onSave }) {
-  const [form, setForm] = useState(
-    task
-      ? { ...EMPTY, ...task, tags: (task.tags || []).join(', ') }
-      : { ...EMPTY, proyectoId }
-  )
+  const [form, setForm] = useState(() => taskToForm(task, proyectoId))
+
+  useEffect(() => {
+    if (open) setForm(taskToForm(task, proyectoId))
+  }, [open, task, proyectoId])
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }))
 
@@ -61,7 +75,7 @@ export default function TaskForm({ open, onClose, task, proyectoId, onSave }) {
           ]}
         />
         <Input label="Estimación (horas)" type="number" min="0" step="0.5" value={form.estimacionHoras} onChange={(e) => set('estimacionHoras', e.target.value)} />
-        <Input label="Fecha límite" type="date" value={form.fechaLimite?.slice(0, 10) || ''} onChange={(e) => set('fechaLimite', e.target.value)} />
+        <Input label="Fecha límite" type="date" value={form.fechaLimite} onChange={(e) => set('fechaLimite', e.target.value)} />
         <Input label="Tags (separados por coma)" value={form.tags} onChange={(e) => set('tags', e.target.value)} className="sm:col-span-2" />
         <label className="block sm:col-span-2">
           <span className="mb-1 block text-sm font-medium">Descripción</span>
