@@ -1,0 +1,206 @@
+import { toUTCISO } from '../utils/time'
+
+const now = new Date()
+const daysAgo = (n) => {
+  const d = new Date(now)
+  d.setDate(d.getDate() - n)
+  return toUTCISO(d)
+}
+
+export const SEED_PROJECTS = [
+  {
+    id: 'proj-1',
+    nombre: 'Web Corporativa',
+    cliente: 'Acme S.L.',
+    descripcion: 'Rediseño completo del sitio web corporativo',
+    estado: 'activo',
+    prioridad: 'alta',
+    fechaInicio: daysAgo(30),
+    fechaEntrega: daysAgo(-14),
+    presupuestoEstimado: 5000,
+  },
+  {
+    id: 'proj-2',
+    nombre: 'App Móvil',
+    cliente: 'StartupXYZ',
+    descripcion: 'MVP de aplicación móvil React Native',
+    estado: 'activo',
+    prioridad: 'media',
+    fechaInicio: daysAgo(14),
+    fechaEntrega: daysAgo(-30),
+    presupuestoEstimado: 8000,
+  },
+  {
+    id: 'proj-3',
+    nombre: 'Migración Legacy',
+    cliente: 'Industrias Beta',
+    descripcion: 'Migración de sistema legacy a cloud',
+    estado: 'pausado',
+    prioridad: 'baja',
+    fechaInicio: daysAgo(60),
+    fechaEntrega: daysAgo(-7),
+    presupuestoEstimado: 12000,
+  },
+]
+
+export const SEED_TASKS = [
+  {
+    id: 'task-1',
+    proyectoId: 'proj-1',
+    titulo: 'Diseño de wireframes',
+    descripcion: 'Wireframes para las 5 páginas principales',
+    estado: 'done',
+    prioridad: 'alta',
+    estimacionHoras: 8,
+    horasReales: 9,
+    tags: ['diseño', 'ux'],
+    fechaLimite: daysAgo(20),
+  },
+  {
+    id: 'task-2',
+    proyectoId: 'proj-1',
+    titulo: 'Implementar homepage',
+    descripcion: 'Desarrollo de la página de inicio responsive',
+    estado: 'doing',
+    prioridad: 'alta',
+    estimacionHoras: 12,
+    horasReales: 6,
+    tags: ['frontend', 'react'],
+    fechaLimite: daysAgo(-3),
+  },
+  {
+    id: 'task-3',
+    proyectoId: 'proj-1',
+    titulo: 'Configurar CMS',
+    descripcion: 'Integración con headless CMS',
+    estado: 'todo',
+    prioridad: 'media',
+    estimacionHoras: 6,
+    horasReales: 0,
+    tags: ['backend'],
+    fechaLimite: daysAgo(-10),
+  },
+  {
+    id: 'task-4',
+    proyectoId: 'proj-2',
+    titulo: 'Pantalla de login',
+    descripcion: 'Auth flow con OAuth',
+    estado: 'doing',
+    prioridad: 'alta',
+    estimacionHoras: 10,
+    horasReales: 4,
+    tags: ['mobile', 'auth'],
+    fechaLimite: daysAgo(-5),
+  },
+  {
+    id: 'task-5',
+    proyectoId: 'proj-2',
+    titulo: 'API de usuarios',
+    descripcion: 'Endpoints CRUD de usuarios',
+    estado: 'blocked',
+    prioridad: 'media',
+    estimacionHoras: 8,
+    horasReales: 2,
+    tags: ['api'],
+    fechaLimite: daysAgo(-2),
+  },
+  {
+    id: 'task-6',
+    proyectoId: 'proj-3',
+    titulo: 'Auditoría de código',
+    descripcion: 'Revisión del código legacy',
+    estado: 'todo',
+    prioridad: 'baja',
+    estimacionHoras: 16,
+    horasReales: 0,
+    tags: ['análisis'],
+    fechaLimite: daysAgo(5),
+  },
+]
+
+export const SEED_SESSIONS = [
+  {
+    id: 'sess-1',
+    tareaId: 'task-1',
+    inicio: daysAgo(22),
+    fin: daysAgo(22),
+    duracionMinutos: 180,
+    pausasMinutos: 15,
+    notas: 'Wireframes v1 completados',
+    facturable: true,
+  },
+  {
+    id: 'sess-2',
+    tareaId: 'task-1',
+    inicio: daysAgo(21),
+    fin: daysAgo(21),
+    duracionMinutos: 360,
+    pausasMinutos: 30,
+    notas: 'Revisión con cliente',
+    facturable: true,
+  },
+  {
+    id: 'sess-3',
+    tareaId: 'task-2',
+    inicio: daysAgo(2),
+    fin: daysAgo(2),
+    duracionMinutos: 240,
+    pausasMinutos: 20,
+    notas: 'Header y hero section',
+    facturable: true,
+  },
+  {
+    id: 'sess-4',
+    tareaId: 'task-2',
+    inicio: daysAgo(1),
+    fin: daysAgo(1),
+    duracionMinutos: 120,
+    pausasMinutos: 10,
+    notas: 'Footer y responsive',
+    facturable: true,
+  },
+  {
+    id: 'sess-5',
+    tareaId: 'task-4',
+    inicio: daysAgo(3),
+    fin: daysAgo(3),
+    duracionMinutos: 150,
+    pausasMinutos: 0,
+    notas: 'UI de login',
+    facturable: false,
+  },
+  {
+    id: 'sess-6',
+    tareaId: 'task-4',
+    inicio: daysAgo(0),
+    fin: daysAgo(0),
+    duracionMinutos: 90,
+    pausasMinutos: 5,
+    notas: 'OAuth Google',
+    facturable: false,
+  },
+]
+
+export const SEED_ACTIVITIES = [
+  {
+    id: 'act-1',
+    tipo: 'proyecto_creado',
+    entidadId: 'proj-1',
+    mensaje: 'Proyecto "Web Corporativa" creado',
+    fecha: daysAgo(30),
+  },
+  {
+    id: 'act-2',
+    tipo: 'tarea_completada',
+    entidadId: 'task-1',
+    mensaje: 'Tarea "Diseño de wireframes" completada',
+    fecha: daysAgo(21),
+  },
+]
+
+export const DEFAULT_SETTINGS = {
+  userName: 'Usuario',
+  estimationAlertPercent: 80,
+  currency: 'EUR',
+  darkMode: false,
+}
