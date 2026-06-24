@@ -21,7 +21,7 @@ export default function TaskCard({ task, onEdit, onDelete, showProject }) {
 
   return (
     <div
-      className={`rounded-xl border p-4 shadow-sm ${task.estado === 'done' ? 'bg-green-100 dark:bg-green-900/40' : 'bg-white dark:bg-gray-800'
+      className={`rounded-xl border p-4 shadow-sm min-w-0 ${task.estado === 'done' ? 'bg-green-100 dark:bg-green-900/40' : 'bg-white dark:bg-gray-800'
         } ${isOverEstimate
           ? 'border-red-400 dark:border-red-600'
           : isNearLimit
@@ -31,7 +31,7 @@ export default function TaskCard({ task, onEdit, onDelete, showProject }) {
               : 'border-gray-200 dark:border-gray-700'
         }`}
     >
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between gap-2 min-w-0">
         <div className="min-w-0 flex-1">
           <h3 className="font-medium truncate">{task.titulo}</h3>
           {showProject && project && (
