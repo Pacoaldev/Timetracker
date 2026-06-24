@@ -35,7 +35,7 @@ npm install
 2. Configura Supabase en tu cuenta:
 - Crea un nuevo proyecto en Supabase.
 - Abre la configuración del proyecto y busca la URL de la API y la clave `anon_key`.
-- Si necesitas usar tu propia instancia de Supabase, sustituye las credenciales en el archivo `src/utils/supabase.js`. Actualmente están hardcodeadas para facilitar el uso inmediato con la base de datos de pruebas configurada.
+- Si necesitas usar tu propia instancia de Supabase, sustituye las credenciales en el archivo `.env.local` basándote en el archivo `.env.example`.
 
 3. Configura el esquema de la base de datos:
 - En Supabase, ve al "SQL Editor" y ejecuta el contenido del script de la base de datos (puedes encontrar un resumen de la estructura en los archivos del sistema original o aplicar el script proporcionado). Asegúrate de renombrar las columnas usando mayúsculas para conservar camelCase si es necesario:
