@@ -40,13 +40,14 @@ export default function Layout() {
   }, [activeTimer, pauseTimer, resumeTimer])
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex flex-col-reverse md:flex-row h-screen overflow-hidden">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-gray-800">
+        <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 md:px-6 py-3 dark:border-gray-700 dark:bg-gray-800">
+          <div className="md:hidden font-bold text-gray-900 dark:text-gray-100 mr-4">TimeTracker</div>
           <Timer compact />
         </header>
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <Outlet />
         </main>
       </div>
