@@ -21,13 +21,15 @@ export default function TaskCard({ task, onEdit, onDelete, showProject }) {
 
   return (
     <div
-      className={`rounded-xl border bg-white p-4 shadow-sm dark:bg-gray-800 ${
-        isOverEstimate
+      className={`rounded-xl border p-4 shadow-sm ${task.estado === 'done' ? 'bg-green-100 dark:bg-green-900/40' : 'bg-white dark:bg-gray-800'
+        } ${isOverEstimate
           ? 'border-red-400 dark:border-red-600'
           : isNearLimit
             ? 'border-yellow-400 dark:border-yellow-600'
-            : 'border-gray-200 dark:border-gray-700'
-      }`}
+            : task.estado === 'done'
+              ? 'border-green-600 dark:border-green-800/30'
+              : 'border-gray-200 dark:border-gray-700'
+        }`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
