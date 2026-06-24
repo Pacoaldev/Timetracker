@@ -311,7 +311,7 @@ export const useStore = create((set, get) => ({
     const openSession = sessions.find((s) => !s.fin)
     if (!openSession) return
     set({
-      activeTimer: { sessionId: openSession.id, taskId: openSession.tareaId, startedAt: openSession.inicio, isPaused: true, pauseStartedAt: null, tick: Date.now() }
+      activeTimer: { sessionId: openSession.id, taskId: openSession.tareaId, startedAt: openSession.inicio, isPaused: false, pauseStartedAt: null, tick: Date.now() }
     })
   },
 }))

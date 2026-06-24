@@ -44,8 +44,10 @@ export default function Layout() {
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 md:px-6 py-3 dark:border-gray-700 dark:bg-gray-800">
-          <div className="md:hidden font-bold text-gray-900 dark:text-gray-100 mr-4">TimeTracker</div>
-          <Timer compact />
+          <div className="md:hidden font-bold text-gray-900 dark:text-gray-100 mr-4 shrink-0">TimeTracker</div>
+          <div className="flex-1 min-w-0 flex justify-end">
+            <Timer compact />
+          </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <Outlet />

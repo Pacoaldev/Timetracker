@@ -32,14 +32,14 @@ export default function Sidebar() {
             to={item.to}
             end={item.to === '/'}
             className={({ isActive }) =>
-              `flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-2 rounded-lg px-2 md:px-3 py-2 text-[10px] md:text-sm font-medium transition-colors min-w-[72px] md:min-w-0 ${
+              `flex flex-1 md:flex-none flex-col md:flex-row items-center justify-center md:justify-start gap-0.5 md:gap-2 rounded-lg px-0.5 md:px-3 py-2 text-[10px] md:text-sm font-medium transition-colors min-w-0 ${
                 isActive
                   ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                   : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
               }`
             }
           >
-            <span className="text-xl md:text-base">{item.icon}</span>
+            <span className="text-lg md:text-base">{item.icon}</span>
             <span className="truncate w-full text-center md:text-left">{item.label}</span>
           </NavLink>
         ))}
