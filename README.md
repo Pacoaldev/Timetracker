@@ -24,6 +24,12 @@ Gestor de tiempo dedicado a tareas y sprints en proyectos. Aplicación web moder
 - npm
 - Cuenta de Supabase (Free Tier) para la base de datos
 
+## Capturas de pantalla
+
+![Pantalla principal](public/images/Pprincipal.png)
+![Pantalla tareas](public/images/PTareas.png)
+![Pantalla estadísticas](public/images/PEstadisticas.png)
+
 ## Instalación
 
 1. Clona el repositorio e instala las dependencias:
