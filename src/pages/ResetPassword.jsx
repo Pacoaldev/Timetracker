@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -7,13 +7,14 @@ export default function ResetPassword() {
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
-  const { updatePassword, needsPasswordUpdate, user } = useAuth()
+  const { updatePassword, needsPasswordUpdate, user, authReady } = useAuth()
   const navigate = useNavigate()
 
-  if (!user && !needsPasswordUpdate) {
-    navigate('/login', { replace: true })
-    return null
-  }
+  useEffect(() => {
+    if (authReady && !user && !needsPasswordUpdate) {
+      navigate('/login', { replace: true })
+    }
+  }, [authReady, user, needsPasswordUpdate, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -37,6 +38,14 @@ export default function ResetPassword() {
     }
   }
 
+  if (!authReady || (!user && !needsPasswordUpdate)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
+        Cargando…
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4">
       <div className="max-w-md w-full space-y-6 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
@@ -56,6 +65,7 @@ export default function ResetPassword() {
             type="password"
             required
             minLength={6}
+            autoComplete="new-password"
             placeholder="Nueva contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -65,6 +75,7 @@ export default function ResetPassword() {
             type="password"
             required
             minLength={6}
+            autoComplete="new-password"
             placeholder="Repetir contraseña"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}

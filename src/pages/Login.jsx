@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
@@ -8,8 +8,14 @@ export default function Login() {
   const [isRegistering, setIsRegistering] = useState(false)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
-  const { login, signup, resetPassword } = useAuth()
+  const { user, authReady, login, signup, resetPassword } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (authReady && user) {
+      navigate('/', { replace: true })
+    }
+  }, [authReady, user, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -18,17 +24,29 @@ export default function Login() {
 
     try {
       if (isRegistering) {
-        await signup(email, password)
-        alert('Revisa tu correo para verificar la cuenta o inicia sesión si no configuraste confirmación.')
+        const { needsEmailConfirmation } = await signup(email, password)
+        if (needsEmailConfirmation) {
+          alert('Cuenta creada. Revisa tu correo para confirmar o pide al admin que confirme tu usuario en Supabase.')
+        } else {
+          navigate('/', { replace: true })
+        }
       } else {
         await login(email, password)
-        navigate('/')
+        navigate('/', { replace: true })
       }
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
+  }
+
+  if (!authReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
+        Cargando…
+      </div>
+    )
   }
 
   return (
@@ -52,6 +70,7 @@ export default function Login() {
                 id="email-address"
                 name="email"
                 type="email"
+                autoComplete="email"
                 required
                 className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Email"
@@ -65,6 +84,7 @@ export default function Login() {
                 id="password"
                 name="password"
                 type="password"
+                autoComplete={isRegistering ? 'new-password' : 'current-password'}
                 required
                 className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Contraseña"
@@ -88,7 +108,10 @@ export default function Login() {
         <div className="text-center mt-4 space-y-2">
           <button
             type="button"
-            onClick={() => setIsRegistering(!isRegistering)}
+            onClick={() => {
+              setIsRegistering(!isRegistering)
+              setError(null)
+            }}
             className="block w-full text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400"
           >
             {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}

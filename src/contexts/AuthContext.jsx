@@ -6,57 +6,69 @@ const AuthContext = createContext()
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [role, setRole] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [authReady, setAuthReady] = useState(false)
   const [needsPasswordUpdate, setNeedsPasswordUpdate] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchRole(session.user.id)
-      } else {
-        setLoading(false)
-      }
-    })
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null)
+      const nextUser = session?.user ?? null
+      setUser(nextUser)
+
       if (event === 'PASSWORD_RECOVERY') {
         setNeedsPasswordUpdate(true)
       }
-      if (session?.user) {
-        fetchRole(session.user.id)
+
+      if (nextUser) {
+        loadRole(nextUser.id)
       } else {
         setRole(null)
-        setLoading(false)
       }
+
+      setAuthReady(true)
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
-  async function fetchRole(userId) {
+  async function loadRole(userId) {
     const { data } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', userId)
-      .single()
-    if (data) setRole(data.role)
-    setLoading(false)
+      .maybeSingle()
+    setRole(data?.role ?? 'collaborator')
+  }
+
+  function applySession(session) {
+    const nextUser = session?.user ?? null
+    setUser(nextUser)
+    if (nextUser) {
+      return loadRole(nextUser.id)
+    }
+    setRole(null)
+    return Promise.resolve()
   }
 
   async function login(email, password) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
+    if (!data.session) {
+      throw new Error('No se pudo iniciar sesión. Comprueba que el email esté confirmado en Supabase.')
+    }
+    await applySession(data.session)
   }
 
   async function signup(email, password) {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: authRedirectUrl('/') },
     })
     if (error) throw error
+    if (data.session) {
+      await applySession(data.session)
+    }
+    return { needsEmailConfirmation: !data.session }
   }
 
   async function resetPassword(email) {
@@ -73,13 +85,17 @@ export function AuthProvider({ children }) {
   }
 
   async function logout() {
-    await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+    setUser(null)
+    setRole(null)
+    setNeedsPasswordUpdate(false)
   }
 
   const value = {
     user,
     role,
-    loading,
+    authReady,
     needsPasswordUpdate,
     login,
     signup,
@@ -88,7 +104,7 @@ export function AuthProvider({ children }) {
     logout,
   }
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export const useAuth = () => useContext(AuthContext)

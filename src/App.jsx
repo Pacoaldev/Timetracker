@@ -16,7 +16,15 @@ import { useStore } from './store'
 import { useAuth } from './contexts/AuthContext'
 
 function AppRoutes() {
-  const { needsPasswordUpdate } = useAuth()
+  const { needsPasswordUpdate, authReady } = useAuth()
+
+  if (!authReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
+        Cargando…
+      </div>
+    )
+  }
 
   if (needsPasswordUpdate) {
     return <ResetPassword />
