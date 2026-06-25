@@ -8,7 +8,7 @@ export default function Login() {
   const [isRegistering, setIsRegistering] = useState(false)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
-  const { login, signup } = useAuth()
+  const { login, signup, resetPassword } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
@@ -85,13 +85,35 @@ export default function Login() {
           </div>
         </form>
 
-        <div className="text-center mt-4">
+        <div className="text-center mt-4 space-y-2">
           <button
+            type="button"
             onClick={() => setIsRegistering(!isRegistering)}
-            className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400"
+            className="block w-full text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400"
           >
             {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
           </button>
+          {!isRegistering && (
+            <button
+              type="button"
+              disabled={loading || !email}
+              onClick={async () => {
+                setError(null)
+                setLoading(true)
+                try {
+                  await resetPassword(email)
+                  alert('Revisa tu correo para restablecer la contraseña.')
+                } catch (err) {
+                  setError(err.message)
+                } finally {
+                  setLoading(false)
+                }
+              }}
+              className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50"
+            >
+              ¿Olvidaste la contraseña?
+            </button>
+          )}
         </div>
       </div>
     </div>

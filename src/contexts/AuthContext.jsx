@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '../utils/supabase'
+import { authRedirectUrl, supabase } from '../utils/supabase'
 
 const AuthContext = createContext()
 
@@ -47,7 +47,18 @@ export function AuthProvider({ children }) {
   }
 
   async function signup(email, password) {
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: authRedirectUrl('/') },
+    })
+    if (error) throw error
+  }
+
+  async function resetPassword(email) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: authRedirectUrl('/login'),
+    })
     if (error) throw error
   }
 
@@ -55,7 +66,7 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
   }
 
-  const value = { user, role, loading, login, signup, logout }
+  const value = { user, role, loading, login, signup, resetPassword, logout }
 
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>
 }
