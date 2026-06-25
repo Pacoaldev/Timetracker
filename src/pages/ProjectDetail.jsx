@@ -67,29 +67,57 @@ export default function ProjectDetail() {
       <div className="mb-2">
         <Link to="/projects" className="text-sm text-blue-600 hover:underline">← Proyectos</Link>
       </div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">{project.nombre}</h1>
-          <p className="text-gray-500">{project.cliente}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" onClick={() => generateCSV(project, tasks, sessions)}>Export CSV</Button>
-          <Button variant="secondary" onClick={() => generatePDF(project, tasks, sessions)}>Export PDF</Button>
-          {isAdmin && <Button variant="secondary" onClick={() => setSessionOpen(true)}>+ Sesión manual</Button>}
-          <Button onClick={() => { setEditing(null); setFormOpen(true) }}>+ Nueva tarea</Button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">{project.nombre}</h1>
+        <p className="text-gray-500">{project.cliente}</p>
+      </div>
+
+      <div className="mb-4 flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:gap-2">
+        <Button
+          className="w-full md:w-auto"
+          onClick={() => { setEditing(null); setFormOpen(true) }}
+        >
+          + Nueva tarea
+        </Button>
+        {isAdmin && (
+          <Button
+            className="w-full md:w-auto"
+            variant="secondary"
+            onClick={() => setSessionOpen(true)}
+          >
+            + Sesión manual
+          </Button>
+        )}
+        <div className="grid grid-cols-2 gap-2 md:contents">
+          <Button
+            className="w-full md:w-auto"
+            variant="secondary"
+            size="sm"
+            onClick={() => generateCSV(project, tasks, sessions)}
+          >
+            Export CSV
+          </Button>
+          <Button
+            className="w-full md:w-auto"
+            variant="secondary"
+            size="sm"
+            onClick={() => generatePDF(project, tasks, sessions)}
+          >
+            Export PDF
+          </Button>
         </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-4">
-        <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="mb-4 flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:gap-4">
+        <div className="flex w-full overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 md:w-auto">
           <button
-            className={`px-4 py-2 text-sm ${view === 'list' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800'}`}
+            className={`flex-1 px-4 py-2 text-sm md:flex-none ${view === 'list' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800'}`}
             onClick={() => setView('list')}
           >
             Lista
           </button>
           <button
-            className={`px-4 py-2 text-sm ${view === 'kanban' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800'}`}
+            className={`flex-1 px-4 py-2 text-sm md:flex-none ${view === 'kanban' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800'}`}
             onClick={() => setView('kanban')}
           >
             Kanban
@@ -106,7 +134,7 @@ export default function ProjectDetail() {
             { value: 'blocked', label: 'Blocked' },
             { value: 'done', label: 'Done' },
           ]}
-          className="w-44"
+          className="w-full md:w-44"
         />
         <Select
           label=""
@@ -118,7 +146,7 @@ export default function ProjectDetail() {
             { value: 'media', label: 'Media' },
             { value: 'baja', label: 'Baja' },
           ]}
-          className="w-44"
+          className="w-full md:w-44"
         />
         {allTags.length > 0 && (
           <Select
@@ -126,7 +154,7 @@ export default function ProjectDetail() {
             value={filterTag}
             onChange={(e) => setFilterTag(e.target.value)}
             options={[{ value: 'all', label: 'Todos los tags' }, ...allTags.map((t) => ({ value: t, label: t }))]}
-            className="w-40"
+            className="w-full md:w-40"
           />
         )}
       </div>
