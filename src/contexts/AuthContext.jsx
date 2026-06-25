@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [role, setRole] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [needsPasswordUpdate, setNeedsPasswordUpdate] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -18,8 +19,11 @@ export function AuthProvider({ children }) {
       }
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
+      if (event === 'PASSWORD_RECOVERY') {
+        setNeedsPasswordUpdate(true)
+      }
       if (session?.user) {
         fetchRole(session.user.id)
       } else {
@@ -57,16 +61,32 @@ export function AuthProvider({ children }) {
 
   async function resetPassword(email) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: authRedirectUrl('/login'),
+      redirectTo: authRedirectUrl('/reset-password'),
     })
     if (error) throw error
+  }
+
+  async function updatePassword(password) {
+    const { error } = await supabase.auth.updateUser({ password })
+    if (error) throw error
+    setNeedsPasswordUpdate(false)
   }
 
   async function logout() {
     await supabase.auth.signOut()
   }
 
-  const value = { user, role, loading, login, signup, resetPassword, logout }
+  const value = {
+    user,
+    role,
+    loading,
+    needsPasswordUpdate,
+    login,
+    signup,
+    resetPassword,
+    updatePassword,
+    logout,
+  }
 
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>
 }

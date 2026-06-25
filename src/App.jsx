@@ -11,7 +11,35 @@ import Timesheet from './pages/Timesheet'
 import Stats from './pages/Stats'
 import Settings from './pages/Settings'
 import Login from './pages/Login'
+import ResetPassword from './pages/ResetPassword'
 import { useStore } from './store'
+import { useAuth } from './contexts/AuthContext'
+
+function AppRoutes() {
+  const { needsPasswordUpdate } = useAuth()
+
+  if (needsPasswordUpdate) {
+    return <ResetPassword />
+  }
+
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="projects" element={<Projects />} />
+          <Route path="projects/:id" element={<ProjectDetail />} />
+          <Route path="tasks" element={<Tasks />} />
+          <Route path="timesheet" element={<Timesheet />} />
+          <Route path="stats" element={<Stats />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+      </Route>
+    </Routes>
+  )
+}
 
 export default function App() {
   const settings = useStore((s) => s.settings)
@@ -23,20 +51,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route element={<ProtectedRoute />}>
-            <Route element={<Layout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="projects" element={<Projects />} />
-              <Route path="projects/:id" element={<ProjectDetail />} />
-              <Route path="tasks" element={<Tasks />} />
-              <Route path="timesheet" element={<Timesheet />} />
-              <Route path="stats" element={<Stats />} />
-              <Route path="settings" element={<Settings />} />
-            </Route>
-          </Route>
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
     </AuthProvider>
   )
