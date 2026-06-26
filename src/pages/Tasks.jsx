@@ -20,7 +20,7 @@ export default function Tasks() {
     if (filterEstado !== 'all' && t.estado !== filterEstado) return false
     if (filterPrioridad !== 'all' && t.prioridad !== filterPrioridad) return false
     return true
-  })
+  }).sort((a, b) => (a.estado === 'done') - (b.estado === 'done') // ponytail: simple sort to prioritize non-done
 
   return (
     <div>
