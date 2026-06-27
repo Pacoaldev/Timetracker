@@ -203,4 +203,5 @@ export const DEFAULT_SETTINGS = {
   estimationAlertPercent: 80,
   currency: 'EUR',
   darkMode: false,
+  pricePerHour: 0, // ponytail: default hourly rate for billing
 }

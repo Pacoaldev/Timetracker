@@ -23,9 +23,13 @@ export default function ProjectDetail() {
   const updateTask = useStore((s) => s.updateTask)
   const deleteTask = useStore((s) => s.deleteTask)
   const addSession = useStore((s) => s.addSession)
+  const settings = useStore((s) => s.settings)
 
   const project = projects.find((p) => p.id === id)
   const projectTasks = tasks.filter((t) => t.proyectoId === id)
+  const billableSessions = sessions.filter(s => s.facturable && projectTasks.some(t => t.id === s.tareaId))
+  const totalBillableMinutes = billableSessions.reduce((sum, s) => sum + (Number(s.duracionMinutos) || 0), 0)
+  const totalAmount = (totalBillableMinutes / 60) * (settings.pricePerHour || 0)
 
   const [view, setView] = useState('list')
   const [formOpen, setFormOpen] = useState(false)
@@ -70,6 +74,9 @@ export default function ProjectDetail() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold">{project.nombre}</h1>
         <p className="text-gray-500">{project.cliente}</p>
+        {isAdmin && (
+          <p className="mt-2 font-bold">Facturación total: {totalAmount.toFixed(2)} {settings.currency}</p>
+        )}
       </div>
 
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:gap-2">
@@ -93,7 +100,7 @@ export default function ProjectDetail() {
             className="w-full md:w-auto"
             variant="secondary"
             size="sm"
-            onClick={() => generateCSV(project, tasks, sessions)}
+            onClick={() => generateCSV(project, tasks, sessions, settings)}
           >
             Export CSV
           </Button>
@@ -101,7 +108,7 @@ export default function ProjectDetail() {
             className="w-full md:w-auto"
             variant="secondary"
             size="sm"
-            onClick={() => generatePDF(project, tasks, sessions)}
+            onClick={() => generatePDF(project, tasks, sessions, settings)}
           >
             Export PDF
           </Button>

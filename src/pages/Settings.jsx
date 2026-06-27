@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { useStore } from '../store'
+import { useAuth } from '../contexts/AuthContext'
 import Button from '../components/shared/Button'
 import Input from '../components/shared/Input'
 import Select from '../components/shared/Select'
@@ -14,6 +15,7 @@ export default function Settings() {
   const importData = useStore((s) => s.importData)
   const clearAllData = useStore((s) => s.clearAllData)
   const loadSeedData = useStore((s) => s.loadSeedData)
+  const { role } = useAuth()
 
   const fileRef = useRef(null)
   const [confirmClear, setConfirmClear] = useState(false)
@@ -53,17 +55,26 @@ export default function Settings() {
             value={settings.estimationAlertPercent}
             onChange={(e) => updateSettings({ estimationAlertPercent: Number(e.target.value) })}
           />
-          <Select
-            label="Moneda"
-            value={settings.currency}
-            onChange={(e) => updateSettings({ currency: e.target.value })}
-            options={[
-              { value: 'EUR', label: 'EUR (€)' },
-              { value: 'USD', label: 'USD ($)' },
-              { value: 'GBP', label: 'GBP (£)' },
-            ]}
-          />
-        </div>
+            <Select
+              label="Moneda"
+              value={settings.currency}
+              onChange={(e) => updateSettings({ currency: e.target.value })}
+              options={[
+                { value: 'EUR', label: 'EUR (€)' },
+                { value: 'USD', label: 'USD ($)' },
+                { value: 'GBP', label: 'GBP (£)' },
+              ]}
+            />
+            {role === 'admin' && (
+              <Input
+                label="Precio por hora"
+                type="number"
+                min="0"
+                value={settings.pricePerHour}
+                onChange={(e) => updateSettings({ pricePerHour: Number(e.target.value) })}
+              />
+            )}
+          </div>
       </section>
 
       <section className="mb-8 rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">

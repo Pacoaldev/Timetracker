@@ -12,6 +12,7 @@ export default function Projects() {
   const projects = useStore((s) => s.projects)
   const tasks = useStore((s) => s.tasks)
   const sessions = useStore((s) => s.sessions)
+  const settings = useStore((s) => s.settings)
   const addProject = useStore((s) => s.addProject)
   const updateProject = useStore((s) => s.updateProject)
   const deleteProject = useStore((s) => s.deleteProject)
@@ -77,8 +78,8 @@ export default function Projects() {
               sessions={sessions}
               onEdit={(p) => { setEditing(p); setFormOpen(true) }}
               onDelete={(p) => setConfirmDelete(p)}
-              onExportCSV={(p) => generateCSV(p, tasks, sessions)}
-              onExportPDF={(p) => generatePDF(p, tasks, sessions)}
+              onExportCSV={(p) => generateCSV(p, tasks, sessions, useStore((s)=>s.settings))}
+              onExportPDF={(p) => generatePDF(p, tasks, sessions, settings)}
             />
           ))}
         </div>
